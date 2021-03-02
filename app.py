@@ -20,16 +20,49 @@ from pages.auth_pages import (
     change_password,
 )
 
+# sumamos el logo de aws
+AWS_LOGO = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1024px-Amazon_Web_Services_Logo.svg.png"
+
+# los controles de busqueda
+search_bar = dbc.Row(
+    [
+        dbc.Col(dbc.Input(type="search", placeholder="Search")),
+        dbc.Col(
+            dbc.Button("Search", color="primary", className="ml-2"),
+            width="auto",
+        ),
+    ],
+    no_gutters=True,
+    className="ml-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
+)
+
+# esta es la barra de navegacion superior
 header = dbc.Navbar(
     dbc.Container(
         [
-            dbc.NavbarBrand("Dash Authentication App by Romina Mezher", href="/home"),
+            html.A(
+                dbc.Row(
+                    [
+                        html.Img(src=AWS_LOGO, height="30px",
+                                 className="mt-2 mr-2"),
+                        dbc.NavbarBrand(
+                            "Dash Auth App by Romina Mezher", className="ml-1", style={"text-decoration" : "none"}),
+                    ],
+                    align="left",
+                    no_gutters=True,
+                ),
+                href="/home",
+            ),
             dbc.Nav(
                 [
-                    dbc.NavItem(dbc.NavLink(id='user-name',href='/profile')), # TODO temporary solution
+                    # TODO temporary solution
+                    dbc.NavItem(dbc.NavLink(id='user-name', href='/profile')),
                     dbc.NavItem(dbc.NavLink("Home", href="/home")),
                     dbc.NavItem(dbc.NavLink("Romi Page", href="/romi")),
-                    dbc.NavItem(dbc.NavLink('Login',id='user-action',href='Login'))
+                    dbc.NavItem(dbc.NavLink(
+                        'Login', id='user-action', href='Login')),
+                    dbc.Collapse(search_bar, id="navbar-collapse", navbar=True),                        
                 ]
             )
         ]
@@ -37,7 +70,23 @@ header = dbc.Navbar(
     className="mb-5",
 )
 
-footer = html.Footer(children=[dbc.NavItem(dbc.NavLink("Romi Page", href="/romi"))])
+# el footer con el fixed="bottom"
+footer = dbc.Navbar(
+    [
+        dbc.Row(
+            [
+                dbc.Col(dbc.NavbarBrand(
+                        "This is our Footer", className="ml-2")),
+            ],
+            align="center",
+            no_gutters=True,
+        ),
+        dbc.NavbarToggler(id="navbar-toggler"),
+    ],
+    color="dark",
+    dark=True,
+    fixed="bottom"
+)
 
 app.layout = html.Div(
     [
@@ -46,7 +95,7 @@ app.layout = html.Div(
             [
                 dbc.Container(
                     id='page-content'
-                ),footer
+                ), footer
             ]
         ),
         dcc.Location(id='base-url', refresh=True),
@@ -54,17 +103,19 @@ app.layout = html.Div(
 )
 
 # Este callback se encarga de toda la redireccion
+
+
 @app.callback(
     Output('page-content', 'children'),
     [Input('base-url', 'pathname')])
 def router(pathname):
 
-    print('routing to',pathname)
-    
+    print('routing to', pathname)
+
     if pathname == '/login':
         if not current_user.is_authenticated:
             return login.layout()
-    elif pathname =='/register':
+    elif pathname == '/register':
         if not current_user.is_authenticated:
             return register.layout()
     elif pathname == '/change':
@@ -76,8 +127,8 @@ def router(pathname):
     elif pathname == '/logout':
         if current_user.is_authenticated:
             logout_user()
-    
-    elif pathname == '/' or pathname=='/home':
+
+    elif pathname == '/' or pathname == '/home':
         if current_user.is_authenticated:
             return home.layout()
     elif pathname == '/profile':
@@ -89,7 +140,7 @@ def router(pathname):
 
     if current_user.is_authenticated:
         return home.layout()
-    
+
     return login.layout()
 
 
@@ -105,15 +156,18 @@ def profile_link(content):
         return ''
 
 # este callback muestra Logout si el usuario esta loggeado o Login si el usuario no se loggeo aun
+
+
 @app.callback(
     [Output('user-action', 'children'),
-     Output('user-action','href')],
+     Output('user-action', 'href')],
     [Input('page-content', 'children')])
 def user_logout(input1):
     if current_user.is_authenticated:
         return 'Logout', '/logout'
     else:
         return 'Login', '/login'
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
